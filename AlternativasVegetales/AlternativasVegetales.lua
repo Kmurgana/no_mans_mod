@@ -201,7 +201,7 @@ local function ComprobarElemento(e, donde)
   if e.tipo ~= P and e.tipo ~= S then
     error(donde .. " (" .. e.id .. "): 'tipo' debe ser P o S")
   end
-  if math.type(e.cantidad) ~= "integer" or e.cantidad < 1 then
+  if type(e.cantidad) ~= "number" or e.cantidad < 1 or math.floor(e.cantidad) ~= e.cantidad then
     error(donde .. " (" .. e.id .. "): 'cantidad' debe ser un numero entero >= 1")
   end
 end
@@ -253,7 +253,7 @@ local function ElementoMXML(nombre, e, sangria)
     sangria .. '  <Property name="Type" value="GcInventoryType">',
     sangria .. '    <Property name="InventoryType" value="' .. e.tipo .. '" />',
     sangria .. '  </Property>',
-    sangria .. '  <Property name="Amount" value="' .. e.cantidad .. '" />',
+    sangria .. '  <Property name="Amount" value="' .. string.format("%d", e.cantidad) .. '" />',
     sangria .. '</Property>',
   }, "\n")
 end
