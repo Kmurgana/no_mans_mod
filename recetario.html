@@ -82,9 +82,11 @@ button, input { font: inherit; color: inherit; }
   letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
 .tab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
 .filters { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
-.search { width: min(260px, 100%); border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 10px; }
+.search { width: min(310px, 100%); border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 10px; }
 .check { display: inline-flex; gap: 6px; align-items: center; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
 .check input { accent-color: var(--leaf); }
+.sel { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 8px; max-width: 100%; }
+.group h4.sub { margin: 14px 0 8px; font: 700 0.9rem/1.1 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--units); }
 .hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; max-width: 75ch; }
 
 /* sections + cards */
@@ -234,6 +236,7 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
     <div class="tabs" role="tablist" id="tabs"></div>
     <div class="filters" id="filters">
       <input class="search" id="q" type="search">
+      <select class="sel" id="buff-filter"></select>
       <label class="check"><input type="checkbox" id="only-farm"> <span id="t-farm"></span></label>
       <label class="check"><input type="checkbox" id="only-final" checked> <span id="t-final"></span></label>
     </div>
@@ -277,9 +280,17 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
         'El buff es temporal (unos 10 min según la comunidad). El porcentaje exacto lo calcula el juego.',
       ],
       seeRecipe: n => `Ver receta (${n} pasos)`, seeBuffs: 'Ver todos los buffs',
-      search: 'Buscar comida o ingrediente…', onlyFarm: 'Solo de tu huerto', onlyFinal: 'Solo platos finales',
-      tabs: { buff: 'Buffs del Ingestor', value: 'Más caras', eff: 'Más rentables', fx: 'Al comer', cat: 'Por tipo', mod: 'Recetas del mod' },
+      search: 'Buscar comida, ingrediente o buff…', onlyFarm: 'Solo de tu huerto', onlyFinal: 'Solo platos finales',
+      buffFilter: 'Filtrar por buff', allBuffs: 'Todos los buffs', famOpt: name => `${name} (todos)`,
+      farm: {
+        sellTitle: 'Plata vendiendo', sellText: 'Cocínalas por tandas y véndelas en un terminal de comercio. Son las que más valen por cada paso en el procesador.',
+        scanTitle: 'Plata escaneando', scanText: 'Cómelas con el Consumidor de nutrientes y analiza especies nuevas con el Visor de análisis: cada descubrimiento paga más unidades mientras dura el buff. Según la comunidad, se suma a los módulos de mejora del escáner. Son las de calidad 1,0 con menos pasos.',
+        cronusTitle: 'Nanitos con Cronus', cronusText: 'Cronus, el chef de la Anomalía espacial, valora tu comida y paga nanitos. Según guías de la comunidad, los platos más elaborados pagan más (de media hasta unos 100 nanitos por plato) y repetir el mismo plato paga menos, así que lleva varios distintos. Estas son las de calidad 1,0 con menos pasos.',
+        nanitesNote: 'Otra fuente de nanitos: subir los descubrimientos de especies nuevas que escanees.',
+      },
+      tabs: { farm: 'Para farmear', buff: 'Buffs del Ingestor', value: 'Más caras', eff: 'Más rentables', fx: 'Al comer', cat: 'Por tipo', mod: 'Recetas del mod' },
       hints: {
+        farm: 'Las mejores comidas para ganar plata y nanitos, según cómo las uses. Los filtros de arriba también se aplican aquí.',
         buff: 'Lo que mejora cada comida si la consumes con el Consumidor de nutrientes (datos sacados de tu juego). Dentro de cada buff van primero los platos de más calidad de cocina. Toca ⓘ en una comida para ver su buff.',
         value: 'Ordenadas por precio de venta. Toca una comida para ver qué necesitas y los pasos.',
         eff: 'Mucho valor por cada paso en el procesador: menos trabajo para el mismo dinero.',
@@ -331,9 +342,17 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
         'The buff is temporary (about 10 min according to the community). The game works out the exact percentage.',
       ],
       seeRecipe: n => `View recipe (${n} steps)`, seeBuffs: 'See all buffs',
-      search: 'Search food or ingredient…', onlyFarm: 'Farm only', onlyFinal: 'Final dishes only',
-      tabs: { buff: 'Ingestor buffs', value: 'Most valuable', eff: 'Best value', fx: 'When eaten', cat: 'By type', mod: 'Mod recipes' },
+      search: 'Search food, ingredient or buff…', onlyFarm: 'Farm only', onlyFinal: 'Final dishes only',
+      buffFilter: 'Filter by buff', allBuffs: 'All buffs', famOpt: name => `${name} (all)`,
+      farm: {
+        sellTitle: 'Units from selling', sellText: 'Cook them in batches and sell them at a trade terminal. These are worth the most per processor step.',
+        scanTitle: 'Units from scanning', scanText: 'Eat them through the Nutrient Ingestor and analyse new species with the Analysis Visor: each discovery pays more units while the buff lasts. According to the community, it stacks with scanner upgrade modules. These are the quality 1.0 ones with the fewest steps.',
+        cronusTitle: 'Nanites from Cronus', cronusText: 'Cronus, the chef on the Space Anomaly, rates your food and pays nanites. According to community guides, more elaborate dishes pay more (up to about 100 nanites per dish on average) and repeating the same dish pays less, so bring several different ones. These are the quality 1.0 ones with the fewest steps.',
+        nanitesNote: 'Another source of nanites: uploading the discoveries of the new species you scan.',
+      },
+      tabs: { farm: 'Farming', buff: 'Ingestor buffs', value: 'Most valuable', eff: 'Best value', fx: 'When eaten', cat: 'By type', mod: 'Mod recipes' },
       hints: {
+        farm: 'The best foods for earning units and nanites, depending on how you use them. The filters above apply here too.',
         buff: 'What each food improves when consumed through the Nutrient Ingestor (data taken from your game). Within each buff, dishes with the highest cooking quality come first. Tap ⓘ on a food to see its buff.',
         value: 'Sorted by sale price. Tap a food to see what you need and the steps.',
         eff: 'Lots of value per processor step: less work for the same money.',
@@ -394,11 +413,11 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
   const FX_ORDER = ['life', 'hazard', 'health', 'sprint', 'jetpack'];
   const CAT_ORDER = ['donut', 'cake', 'pie', 'biscuit', 'ice', 'jam', 'drink', 'stew', 'base', 'plant', 'animal'];
   const FINAL = new Set(['donut', 'cake', 'pie', 'biscuit', 'ice', 'jam', 'drink', 'stew']);
-  const TAB_IDS = ['buff', 'value', 'eff', 'fx', 'cat', 'mod'];
+  const TAB_IDS = ['farm', 'buff', 'value', 'eff', 'fx', 'cat', 'mod'];
 
   let lang = store.get('rav-lang2', 'es') === 'en' ? 'en' : 'es';
-  let tab = store.get('rav-tab', 'buff');
-  if (!TAB_IDS.includes(tab)) tab = 'buff';
+  let tab = store.get('rav-tab2', 'farm');
+  if (!TAB_IDS.includes(tab)) tab = 'farm';
   const t = () => T[lang];
   const fmt = n => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, lang === 'es' ? '.' : ',');
   const fmtQ = q => { const s = q.toFixed(2).replace(/0$/, ''); return lang === 'es' ? s.replace('.', ',') : s; };
@@ -433,11 +452,12 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
 
   function filtered() {
     const q = $('#q').value.trim().toLowerCase();
-    const farm = $('#only-farm').checked, fin = $('#only-final').checked;
+    const farm = $('#only-farm').checked, fin = $('#only-final').checked, bf = $('#buff-filter').value;
     const hit = id => D.items[id].en.toLowerCase().includes(q) || D.items[id].es.toLowerCase().includes(q);
     return D.foods.filter(f => {
       if (farm && !f.farm) return false;
       if (fin && !FINAL.has(f.c)) return false;
+      if (bf && (bf.startsWith('fam:') ? !BUFF[f.b] || BUFF[f.b][0] !== bf.slice(4) : f.b !== bf)) return false;
       if (!q) return true;
       return hit(f.id) || f.shop.some(([id]) => hit(id)) || buffName(f.b).toLowerCase().includes(q);
     });
@@ -454,7 +474,19 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
     if (tab === 'mod') { v.innerHTML = renderMod(); return; }
     const arr = filtered();
     const byValue = (a, b) => b.v - a.v;
-    if (tab === 'buff') {
+    const fewest = (a, b) => (a.steps.length - b.steps.length) || (b.v - a.v);
+    if (tab === 'farm') {
+      const F = t().farm, q1 = arr.filter(f => f.q >= 1);
+      const sell = arr.slice().sort((a, b) => b.v / b.steps.length - a.v / a.steps.length).slice(0, 8);
+      const scan = ['Weapon_Scan_Discovery_Creature', 'Weapon_Scan_Discovery_Flora', 'Weapon_Scan_Discovery_Mineral'].map(b => {
+        const g = q1.filter(f => f.b === b).sort(fewest).slice(0, 4);
+        return g.length ? `<h4 class="sub">${esc(buffName(b))}</h4>${list(g)}` : '';
+      }).join('');
+      const cronus = q1.slice().sort(fewest).slice(0, 8);
+      const sec = (title, text, body, note) => body ? `<section class="group"><h3>${esc(title)}</h3><p>${esc(text)}</p>${body}${note ? `<p class="note">${esc(note)}</p>` : ''}</section>` : '';
+      v.innerHTML = (sec(F.sellTitle, F.sellText, sell.length ? list(sell, true) : '') + sec(F.scanTitle, F.scanText, scan)
+        + sec(F.cronusTitle, F.cronusText, cronus.length ? list(cronus) : '', F.nanitesNote)) || list([]);
+    } else if (tab === 'buff') {
       const byQual = (a, b) => (b.q - a.q) || (b.v - a.v);
       v.innerHTML = Object.keys(t().fam).map(fam => {
         const parts = Object.keys(BUFF).filter(b => BUFF[b][0] === fam)
@@ -528,6 +560,12 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
     $('#lang-es').setAttribute('aria-pressed', String(lang === 'es'));
     $('#q').placeholder = L.search; $('#q').setAttribute('aria-label', L.search);
     $('#t-farm').textContent = L.onlyFarm; $('#t-final').textContent = L.onlyFinal;
+    const sel = $('#buff-filter'), keep = sel.value;
+    sel.setAttribute('aria-label', L.buffFilter);
+    sel.innerHTML = `<option value="">${esc(L.allBuffs)}</option>` + Object.keys(L.fam).map(fam =>
+      `<optgroup label="${esc(L.fam[fam])}"><option value="fam:${fam}">${esc(L.famOpt(L.fam[fam]))}</option>` +
+      Object.keys(BUFF).filter(b => BUFF[b][0] === fam).map(b => `<option value="${b}">${esc(buffName(b))}</option>`).join('') + '</optgroup>').join('');
+    sel.value = keep;
     $('#facts').innerHTML = `<p>${esc(L.factsLead)}</p>
       <div class="fact hi"><b>${s.foods}</b><span>${L.factFoods}</span></div>
       <div class="fact"><b>${s.farm}</b><span>${L.factFarm}</span></div>
@@ -549,7 +587,7 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
     if (ib) { openPop(ib); return; }
     if (!$('#pop').hidden && !e.target.closest('#pop') && !e.target.closest('[data-id]')) closePop(false);
     const tb = e.target.closest('[data-tab]');
-    if (tb) { tab = tb.dataset.tab; store.set('rav-tab', tab); render(); if (!tb.classList.contains('tab')) $('#controls').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (tb) { tab = tb.dataset.tab; store.set('rav-tab2', tab); render(); if (!tb.classList.contains('tab')) $('#controls').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     const c = e.target.closest('[data-id]');
     if (c && foodsById[c.dataset.id]) { closePop(false); openFood(c.dataset.id); return; }
     const l = e.target.closest('#lang-en, #lang-es');
@@ -561,7 +599,7 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
   });
   $('#dlg').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
   $('#dlg').addEventListener('close', e => { e.currentTarget.innerHTML = ''; delete e.currentTarget.dataset.food; });
-  ['#q', '#only-farm', '#only-final'].forEach(s => $(s).addEventListener('input', render));
+  ['#q', '#only-farm', '#only-final', '#buff-filter'].forEach(s => $(s).addEventListener('input', render));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#pop').hidden) closePop(true); });
   window.addEventListener('scroll', placePop, { passive: true });
   window.addEventListener('resize', placePop);
