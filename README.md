@@ -2,6 +2,8 @@
 
 Este mod añade **16 recetas al Procesador de Nutrientes** que producen todos los productos animales del juego (leches, huevos, «miel», grasa, etc.) **a partir de plantas**. Así puedes cocinar cualquier receta sin criar ni alimentar animales.
 
+📖 **¿Qué cocinar con todo esto?** Mira el [recetario (RECETAS.md)](RECETAS.md): las mejores comidas del juego hechas solo con plantas, paso a paso.
+
 No quita ni cambia nada del juego: solo **añade** recetas nuevas. Los productos que salen son los de siempre (Leche fresca, Huevo gigante…), así que todas las recetas de cocina del juego los aceptan.
 
 ---
