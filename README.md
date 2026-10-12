@@ -4,7 +4,7 @@ Este mod añade **16 recetas al Procesador de Nutrientes** que producen todos lo
 
 📖 **¿Qué cocinar con todo esto?** Mira el [recetario (RECETAS.md)](RECETAS.md): las mejores comidas del juego hechas solo con plantas, paso a paso.
 
-🗺️ **Recetario visual:** abre [`recetario.html`](recetario.html) en tu navegador (doble clic). Tiene las 231 comidas que se pueden hacer con plantas, con los iconos del juego, agrupadas por precio, rentabilidad, efecto y tipo, y los pasos del procesador dibujados.
+🗺️ **Recetario visual:** abre [`recetario.html`](recetario.html) en tu navegador (doble clic). Tiene las 231 comidas que se pueden hacer con plantas, con los iconos del juego, agrupadas por buff del Nutrient Ingestor (escanear fauna, flora, minerales, minería, jetpack…), precio, rentabilidad, efecto y tipo, y los pasos del procesador dibujados.
 
 No quita ni cambia nada del juego: solo **añade** recetas nuevas. Los productos que salen son los de siempre (Leche fresca, Huevo gigante…), así que todas las recetas de cocina del juego los aceptan.
 
