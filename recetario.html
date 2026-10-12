@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&display=swap">
 <style>
-/* Layout: processor codex. Sticky bar, ingestor callout, tabs + filters, a grid of
-   inventory-slot cards; a dialog lays each recipe out as processor rows (inputs → output). */
+/* Layout: processor codex. Sticky bar, Ingestor callout, tabs + filters, a grid of
+   inventory-slot cards with an ⓘ buff panel; a dialog lays each recipe out as processor rows. */
 :root {
   --bg: #edf1ef; --surface: #ffffff; --slot: #dbe4e0; --slot-2: #c8d5d0; --ink: #15211f; --muted: #56635f; --line: #cdd8d4;
   --leaf: #1d8558; --leaf-soft: #d4eee1; --units: #946000; --units-soft: #fbecc9; --wild: #ad4e14; --wild-soft: #f8e1d1;
@@ -68,6 +68,9 @@ button, input { font: inherit; color: inherit; }
 .ingestor p { margin: 4px 0 0; font-size: 0.86rem; color: var(--muted); }
 .ingestor .buff { color: var(--ink); font-weight: 600; }
 .ingestor .row { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+.ingestor details { grid-column: 1 / -1; margin-top: 8px; font-size: 0.85rem; color: var(--muted); }
+.ingestor summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+.ingestor details ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
 .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
 .btn.primary { background: var(--leaf); border-color: var(--leaf); color: var(--surface); }
 .note { font-size: 0.78rem; color: var(--muted); }
@@ -78,25 +81,41 @@ button, input { font: inherit; color: inherit; }
 .tab { border: 0; background: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font: 600 0.98rem/1 var(--font-display);
   letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
 .tab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
-.filters { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-left: auto; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
 .search { width: min(260px, 100%); border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 10px; }
 .check { display: inline-flex; gap: 6px; align-items: center; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
 .check input { accent-color: var(--leaf); }
-.hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; max-width: 70ch; }
+.hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; max-width: 75ch; }
 
 /* sections + cards */
 .group { padding-block: 8px 14px; }
 .group h3 { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 10px; font: 700 1.15rem/1.1 var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
 .group h3 small { font: 500 0.8rem/1 var(--font-body); letter-spacing: 0; text-transform: none; color: var(--muted); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr)); gap: 10px; }
-.card { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 4px 12px; align-items: center; text-align: left; width: 100%;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; cursor: pointer; box-shadow: var(--shadow);
-  transition: transform 0.12s ease, border-color 0.12s ease; }
-.card:hover { border-color: var(--leaf); transform: translateY(-1px); }
+.group > p { margin: -4px 0 10px; color: var(--muted); font-size: 0.85rem; max-width: 70ch; }
+.fam { margin: 18px 0 2px; font: 600 0.78rem/1.2 var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr)); gap: 10px; align-items: start; }
+.card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow);
+  transition: border-color 0.12s ease; }
+.card:hover, .card:focus-within { border-color: var(--leaf); }
+.card-main { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 4px 12px; align-items: center; text-align: left; width: 100%;
+  background: none; border: 0; border-radius: var(--r); padding: 10px 44px 10px 10px; cursor: pointer; }
 .card .name { font-weight: 700; line-height: 1.2; }
 .card .alt { color: var(--muted); font-size: 0.78rem; line-height: 1.2; }
 .card .meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
 .rank { font: 700 0.78rem/1 var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
+.info-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--muted); font: 700 1rem/1 Georgia, "Times New Roman", serif; font-style: italic; cursor: pointer; }
+.info-btn:hover { color: var(--leaf); border-color: var(--leaf); }
+.info-btn[aria-expanded="true"] { background: var(--leaf); border-color: var(--leaf); color: var(--surface); }
+.info { border-top: 1px dashed var(--line); padding: 10px 12px 12px; }
+.buffbox { display: grid; gap: 8px; font-size: 0.85rem; }
+.buffbox .head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.buffbox .famlabel { font: 600 0.72rem/1.2 var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.buffbox p { margin: 0; }
+.buffbox dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; }
+.buffbox dt { color: var(--muted); }
+.buffbox dd { margin: 0; font-weight: 600; }
+.buffbox .link { justify-self: start; }
 
 /* inventory slot */
 .slot { position: relative; width: 64px; height: 64px; border-radius: 9px; flex: none;
@@ -114,21 +133,19 @@ button, input { font: inherit; color: inherit; }
 .units { color: var(--units); background: var(--units-soft); font-variant-numeric: tabular-nums; }
 .steps { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, transparent); }
 .farmchip { color: var(--leaf); background: var(--leaf-soft); }
-.wildchip { color: var(--wild); background: var(--wild-soft); }
+.wildchip { color: var(--wild); background: var(--wild-soft); white-space: normal; }
 .modchip { color: var(--leaf); border: 1px solid var(--leaf); padding: 1px 7px; }
+.qual { color: var(--muted); border: 1px solid var(--line); padding: 1px 7px; }
 .fx-life { color: var(--fx-life); background: var(--fx-life-bg); }
 .fx-hazard { color: var(--fx-hazard); background: var(--fx-hazard-bg); }
 .fx-health { color: var(--fx-health); background: var(--fx-health-bg); }
 .fx-sprint { color: var(--fx-sprint); background: var(--fx-sprint-bg); }
 .fx-jetpack { color: var(--fx-jetpack); background: var(--fx-jetpack-bg); }
-.empty { padding: 30px 0; color: var(--muted); }
 .bf-scan { color: var(--units); background: var(--units-soft); }
 .bf-mine { color: var(--wild); background: var(--wild-soft); }
 .bf-move { color: var(--fx-sprint); background: var(--fx-sprint-bg); }
 .bf-surv { color: var(--fx-hazard); background: var(--fx-hazard-bg); }
-.qual { color: var(--muted); border: 1px solid var(--line); padding: 1px 7px; }
-.fam { margin: 18px 0 2px; font: 600 0.78rem/1.2 var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-.group > p { margin: -4px 0 10px; color: var(--muted); font-size: 0.85rem; max-width: 70ch; }
+.empty { padding: 30px 0; color: var(--muted); }
 
 /* mod tab */
 .modrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; }
@@ -138,6 +155,7 @@ button, input { font: inherit; color: inherit; }
 .arrow { font: 700 1.3rem/1 var(--font-display); color: var(--leaf); }
 .cap { display: grid; justify-items: center; gap: 3px; width: 70px; text-align: center; font-size: 0.7rem; line-height: 1.15; color: var(--muted); }
 .cap b { color: var(--ink); font-weight: 600; }
+button.cap { border: 0; background: none; padding: 0; cursor: pointer; }
 
 /* dialog */
 dialog { width: min(760px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); border: 1px solid var(--line); border-radius: 16px; padding: 0;
@@ -151,6 +169,7 @@ dialog::backdrop { background: rgb(5 12 11 / 0.55); }
 .x { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem; }
 .dlg-body { padding: 14px 16px 20px; display: grid; gap: 18px; }
 .dlg-body h4 { margin: 0 0 8px; font: 700 0.95rem/1 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.dlg-body .buffbox { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
 .shop { display: flex; flex-wrap: wrap; gap: 10px; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-size: 0.76rem; color: var(--muted); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
@@ -168,7 +187,6 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
 
 @media (max-width: 760px) {
   .intro { grid-template-columns: minmax(0, 1fr); }
-  .filters { margin-left: 0; }
   .brand p { display: none; }
   .dlg-head { grid-template-columns: 52px minmax(0, 1fr) auto; }
   .dlg-head .slot { width: 52px; height: 52px; }
@@ -176,7 +194,7 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
   .slot.sm { width: 42px; height: 42px; }
   ol.proc li { grid-template-columns: 18px minmax(0, 1fr); gap: 8px; padding: 8px; }
 }
-@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 </style>
 </head>
 <body>
@@ -191,12 +209,12 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
       <circle cx="33" cy="33" r="5" fill="none" stroke="currentColor" stroke-width="2.5"/>
     </svg>
     <div class="brand">
-      <h1>Recetario Alternativas Vegetales</h1>
-      <p>Cocina de No Man's Sky sin animales, con el mod Alternativas Vegetales</p>
+      <h1 id="t-title">Recetario Alternativas Vegetales</h1>
+      <p id="t-sub"></p>
     </div>
-    <div class="seg" role="group" aria-label="Idioma de los nombres de objetos">
-      <button type="button" id="lang-en" aria-pressed="true">EN</button>
-      <button type="button" id="lang-es" aria-pressed="false">ES</button>
+    <div class="seg" role="group" id="lang-group">
+      <button type="button" id="lang-es" aria-pressed="true">ES</button>
+      <button type="button" id="lang-en" aria-pressed="false">EN</button>
     </div>
   </div>
 </header>
@@ -207,23 +225,19 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
     <aside class="ingestor" id="ingestor"></aside>
   </section>
 
-  <nav class="controls" aria-label="Vistas del recetario">
+  <nav class="controls" id="controls">
     <div class="tabs" role="tablist" id="tabs"></div>
-    <div class="filters">
-      <input class="search" id="q" type="search" placeholder="Buscar comida o ingrediente…" aria-label="Buscar">
-      <label class="check"><input type="checkbox" id="only-farm"> Solo de tu huerto</label>
-      <label class="check"><input type="checkbox" id="only-final" checked> Solo platos finales</label>
+    <div class="filters" id="filters">
+      <input class="search" id="q" type="search">
+      <label class="check"><input type="checkbox" id="only-farm"> <span id="t-farm"></span></label>
+      <label class="check"><input type="checkbox" id="only-final" checked> <span id="t-final"></span></label>
     </div>
   </nav>
   <p class="hint" id="hint"></p>
   <div id="view"></div>
 </main>
 
-<footer class="wrap">
-  <p>Todas las recetas se hacen en el Nutrient Processor, de 1 a 3 ingredientes. Puedes meter pilas: con 10 + 10 te salen 10. El valor es el precio base en unidades y al vender cambia un poco según la economía del sistema.</p>
-  <p id="foot-data"></p>
-  <p>Los iconos son los del propio juego. "De tu huerto" significa que solo usa las 6 plantas de Hydroponics Tray (Frost Crystal, Gamma Root, Solanium, Star Bulb, Cactus Flesh, Fungal Mould), más Salt, Carbon o Chromatic Metal.</p>
-</footer>
+<footer class="wrap" id="foot"></footer>
 
 <dialog id="dlg" aria-labelledby="dlg-title"></dialog>
 
@@ -235,49 +249,155 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
   const ICON = JSON.parse(document.getElementById('icons-json').textContent);
   const $ = (s, el = document) => el.querySelector(s);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const fmt = n => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
                   set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
-  let lang = store.get('rav-lang', 'en') === 'es' ? 'es' : 'en';
-  let tab = store.get('rav-tab', 'buff');
-  const FX = { life: 'Soporte vital', hazard: 'Protección', health: 'Salud', sprint: 'Sprint', jetpack: 'Jetpack' };
-  const FX_ORDER = ['life', 'hazard', 'health', 'sprint', 'jetpack'];
-  const BUFF = {
-    Weapon_Scan_Discovery_Creature: ['scan', 'Escanear fauna', 'Más unidades al analizar animales con el visor.'],
-    Weapon_Scan_Discovery_Flora: ['scan', 'Escanear flora', 'Más unidades al analizar plantas con el visor.'],
-    Weapon_Scan_Discovery_Mineral: ['scan', 'Escanear minerales', 'Más unidades al analizar minerales con el visor.'],
-    Weapon_Scan_Recharge_Time: ['scan', 'Recarga del escáner', 'El escáner se recarga antes.'],
-    Weapon_Laser_MiningBonus: ['mine', 'Más recursos al minar', 'Sacas más material con el láser de minería.'],
-    Weapon_Laser_Mining_Speed: ['mine', 'Minado más rápido', 'El láser de minería trabaja más rápido.'],
-    Suit_Jetpack_Tank: ['move', 'Depósito del jetpack', 'El jetpack aguanta más tiempo.'],
-    Suit_Stamina_Strength: ['move', 'Estamina', 'Puedes correr más tiempo.'],
-    Suit_Stamina_Recovery: ['move', 'Recuperación de estamina', 'La estamina se recupera antes.'],
-    Suit_Armour_Shield_Strength: ['surv', 'Escudo', 'El escudo del exotraje resiste más.'],
-    Suit_Energy: ['surv', 'Soporte vital', 'Más capacidad de soporte vital.'],
-    Suit_Energy_Regen: ['surv', 'Recarga de soporte vital', 'El soporte vital se recupera mejor.'],
-    Suit_Protection: ['surv', 'Protección contra peligros', 'Aguantas más en entornos peligrosos.'],
-    Suit_Protection_HeatDrain: ['surv', 'Resistencia al calor', 'Aguantas más en planetas calientes.'],
-    Suit_Protection_ColdDrain: ['surv', 'Resistencia al frío', 'Aguantas más en planetas helados.'],
-    Suit_Protection_ToxDrain: ['surv', 'Resistencia tóxica', 'Aguantas más en planetas tóxicos.'],
-    Suit_Protection_RadDrain: ['surv', 'Resistencia a la radiación', 'Aguantas más en planetas radiactivos.'],
-    Suit_Protection_WaterDrain: ['surv', 'Resistencia bajo el agua', 'Aguantas más buceando.'],
-    Suit_AutoTranslator: ['surv', 'Traductor alienígena', 'Ayuda a entender idiomas alienígenas.'],
+  // ---------- translations ----------
+  const T = {
+    es: {
+      title: 'Recetario Alternativas Vegetales',
+      sub: 'Cocina de No Man\'s Sky sin animales, con el mod Alternativas Vegetales',
+      langGroup: 'Idioma',
+      factsLead: 'Sin el mod, casi toda la cocina del juego pide productos de animales. Con las 16 recetas del mod, la mayoría de platos sale de plantas.',
+      factFoods: 'comidas solo con plantas', factFarm: 'salen enteras de tu huerto', factNoMod: 'se podían sin el mod',
+      ingEyebrow: 'Buffs del Consumidor de nutrientes',
+      ingLead: 'Si comes comida con el Consumidor de nutrientes (Nutrient Ingestor) del exotraje, cada plato da un buff temporal. Este da <span class="buff">+6443 % de recompensa al escanear fauna durante 10 min</span>, según la wiki del juego.',
+      ingCounts: (a, b, c, d) => `Con plantas puedes hacer <span class="buff">${a} comidas de fauna</span>, ${b} de flora, ${c} de minerales y ${d} de minería.`,
+      ingHowTitle: '¿Cómo consigo y uso el Consumidor de nutrientes?',
+      ingHow: [
+        'El plano se compra al mercader de mejoras de exotraje en la Anomalía espacial (según la wiki).',
+        'Se fabrica con 30 Carbono condensado, 2 Microprocesadores y 1 Lubricante, y se instala en el exotraje.',
+        'Pon dentro la comida cocinada y elige «Iniciar consumo»: la va consumiendo sola y aplica su buff.',
+        'El buff es temporal (unos 10 min según la comunidad). El porcentaje exacto lo calcula el juego.',
+      ],
+      seeRecipe: n => `Ver receta (${n} pasos)`, seeBuffs: 'Ver todos los buffs',
+      search: 'Buscar comida o ingrediente…', onlyFarm: 'Solo de tu huerto', onlyFinal: 'Solo platos finales',
+      tabs: { buff: 'Buffs del Ingestor', value: 'Más caras', eff: 'Más rentables', fx: 'Al comer', cat: 'Por tipo', mod: 'Recetas del mod' },
+      hints: {
+        buff: 'Lo que mejora cada comida si la consumes con el Consumidor de nutrientes (datos sacados de tu juego). Dentro de cada buff van primero los platos de más calidad de cocina. Toca ⓘ en una comida para ver su buff.',
+        value: 'Ordenadas por precio de venta. Toca una comida para ver qué necesitas y los pasos.',
+        eff: 'Mucho valor por cada paso en el procesador: menos trabajo para el mismo dinero.',
+        fx: 'Lo que hace cada comida si la comes directamente desde el inventario, sin el Consumidor de nutrientes.',
+        cat: 'Donas, pasteles, tartas, helados… cada grupo ordenado por precio.',
+        mod: 'Las 16 recetas que añade el mod y las plantas de cultivo de las que sale todo.',
+      },
+      foods: n => `${n} ${n === 1 ? 'comida' : 'comidas'}`,
+      steps: n => `${n} ${n === 1 ? 'paso' : 'pasos'}`,
+      fromFarm: 'De tu huerto', usesMod: 'Usa el mod', quality: 'Calidad',
+      empty: 'Nada coincide con la búsqueda o los filtros.',
+      infoAria: name => `Buff de ${name}`, openAria: name => `Ver receta de ${name}`,
+      buffTitle: 'Buff del Consumidor de nutrientes', buffHow: 'Cómo se activa',
+      buffHowText: 'Consúmela con el Consumidor de nutrientes del exotraje. Es temporal y el juego calcula el porcentaje.',
+      eatDirect: 'Si la comes directamente', cookQual: 'Calidad de cocina', none: 'Ninguno',
+      openRecipe: 'Ver receta y pasos',
+      need: 'Necesitas para 1 unidad', procSteps: 'Pasos en el Procesador de nutrientes',
+      legFarm: 'planta de cultivo', legWild: 'silvestre (no se cultiva)', legBasic: 'mineral o recurso básico',
+      make: n => `Haz ${n}`, modRecipe: 'Receta del mod',
+      stepsNote: 'Haz cada paso con pilas para fabricar varias unidades de una vez. «Haz 2» significa que ese paso se necesita dos veces para una unidad del plato final.',
+      close: 'Cerrar',
+      modTitle: 'Las 16 recetas del mod', modSub: 'todos los productos animales, desde plantas',
+      basicsTitle: 'Tus 6 plantas de cultivo', basicsSub: 'sola en el procesador, cada una da un ingrediente básico',
+      procLabel: s => 'Configuración de procesador: ' + s.charAt(0).toLowerCase() + s.slice(1),
+      foot: [
+        'Todas las recetas se hacen en el Procesador de nutrientes (Nutrient Processor), con 1 a 3 ingredientes. Puedes meter pilas: con 10 + 10 te salen 10. El valor es el precio base en unidades; al vender cambia un poco según la economía del sistema.',
+        n => `Recetas calculadas sobre las ${n} recetas originales del procesador (datos de 2025) más las del mod, eligiendo el camino con menos ingredientes y priorizando plantas de cultivo. Los tipos de buff y la calidad de cocina salen de la tabla de productos de tu juego (versión 180836).`,
+        'Los iconos son los del propio juego. «De tu huerto» significa que solo usa las 6 plantas de Bandeja hidropónica (Cristal de escarcha, Raíz de gamma, Solanio, Bulbo estelar, Carne de cactus, Moho fúngico), más Sal, Carbono o Metal cromático.',
+      ],
+      fx: { life: 'Soporte vital', hazard: 'Protección contra peligros', health: 'Salud', sprint: 'Sprint', jetpack: 'Jetpack' },
+      cat: { donut: 'Donas', cake: 'Pasteles', pie: 'Tartas', biscuit: 'Galletas y panes', ice: 'Helados', jam: 'Mermeladas',
+        drink: 'Bebidas', stew: 'Guisos', base: 'Ingredientes elaborados', plant: 'Vegetales procesados', animal: 'Productos «animales» del mod' },
+      fam: { scan: 'Dinero por escanear', mine: 'Minería', move: 'Movimiento', surv: 'Supervivencia' },
+    },
+    en: {
+      title: 'Alternativas Vegetales Recipe Book',
+      sub: 'No Man\'s Sky cooking without animals, with the Alternativas Vegetales (plant-based alternatives) mod',
+      langGroup: 'Language',
+      factsLead: 'Without the mod, most of the game\'s cooking needs animal products. With the mod\'s 16 recipes, most dishes come from plants.',
+      factFoods: 'foods from plants only', factFarm: 'made entirely from your farm', factNoMod: 'were possible without the mod',
+      ingEyebrow: 'Nutrient Ingestor buffs',
+      ingLead: 'Eating food through your exosuit\'s Nutrient Ingestor gives each dish a temporary buff. This one gives <span class="buff">+6443% Fauna Analysis Rewards for 10 min</span>, according to the game wiki.',
+      ingCounts: (a, b, c, d) => `From plants you can make <span class="buff">${a} fauna foods</span>, ${b} flora, ${c} mineral and ${d} mining foods.`,
+      ingHowTitle: 'How do I get and use the Nutrient Ingestor?',
+      ingHow: [
+        'The blueprint is sold by the exosuit upgrade merchant on the Space Anomaly (according to the wiki).',
+        'It is crafted from 30 Condensed Carbon, 2 Microprocessors and 1 Lubricant, and installed in your exosuit.',
+        'Put cooked food in it and select "Begin Ingestion": it eats the food on its own and applies the buff.',
+        'The buff is temporary (about 10 min according to the community). The game works out the exact percentage.',
+      ],
+      seeRecipe: n => `View recipe (${n} steps)`, seeBuffs: 'See all buffs',
+      search: 'Search food or ingredient…', onlyFarm: 'Farm only', onlyFinal: 'Final dishes only',
+      tabs: { buff: 'Ingestor buffs', value: 'Most valuable', eff: 'Best value', fx: 'When eaten', cat: 'By type', mod: 'Mod recipes' },
+      hints: {
+        buff: 'What each food improves when consumed through the Nutrient Ingestor (data taken from your game). Within each buff, dishes with the highest cooking quality come first. Tap ⓘ on a food to see its buff.',
+        value: 'Sorted by sale price. Tap a food to see what you need and the steps.',
+        eff: 'Lots of value per processor step: less work for the same money.',
+        fx: 'What each food does when you eat it straight from your inventory, without the Nutrient Ingestor.',
+        cat: 'Doughnuts, cakes, tarts, ice cream… each group sorted by price.',
+        mod: 'The 16 recipes the mod adds, and the farm plants everything comes from.',
+      },
+      foods: n => `${n} ${n === 1 ? 'food' : 'foods'}`,
+      steps: n => `${n} ${n === 1 ? 'step' : 'steps'}`,
+      fromFarm: 'From your farm', usesMod: 'Uses the mod', quality: 'Quality',
+      empty: 'Nothing matches the search or filters.',
+      infoAria: name => `${name} buff`, openAria: name => `View ${name} recipe`,
+      buffTitle: 'Nutrient Ingestor buff', buffHow: 'How to trigger it',
+      buffHowText: 'Consume it through your exosuit\'s Nutrient Ingestor. It is temporary and the game works out the percentage.',
+      eatDirect: 'If you eat it directly', cookQual: 'Cooking quality', none: 'None',
+      openRecipe: 'View recipe and steps',
+      need: 'You need for 1 unit', procSteps: 'Nutrient Processor steps',
+      legFarm: 'farm plant', legWild: 'wild (cannot be farmed)', legBasic: 'mineral or basic resource',
+      make: n => `Make ${n}`, modRecipe: 'Mod recipe',
+      stepsNote: 'Do each step with stacks to make several units at once. "Make 2" means that step is needed twice for one unit of the final dish.',
+      close: 'Close',
+      modTitle: 'The mod\'s 16 recipes', modSub: 'every animal product, from plants',
+      basicsTitle: 'Your 6 farm plants', basicsSub: 'alone in the processor, each one gives a basic ingredient',
+      procLabel: s => 'Processor Setting: ' + s,
+      foot: [
+        'Every recipe is made in the Nutrient Processor, with 1 to 3 ingredients. You can use stacks: 10 + 10 gives you 10. Value is the base price in units; the sale price varies a little with the system\'s economy.',
+        n => `Recipes worked out from the processor's ${n} original recipes (2025 data) plus the mod's, picking the path with the fewest ingredients and preferring farm plants. Buff types and cooking quality come from your game's product table (build 180836).`,
+        'Icons are the game\'s own. "From your farm" means it only uses the 6 Hydroponic Tray plants (Frost Crystal, Gamma Root, Solanium, Star Bulb, Cactus Flesh, Fungal Mould), plus Salt, Carbon or Chromatic Metal.',
+      ],
+      fx: { life: 'Life support', hazard: 'Hazard protection', health: 'Health', sprint: 'Sprint', jetpack: 'Jetpack' },
+      cat: { donut: 'Doughnuts', cake: 'Cakes', pie: 'Tarts and pies', biscuit: 'Biscuits and bread', ice: 'Ice cream', jam: 'Jams',
+        drink: 'Drinks', stew: 'Stews', base: 'Prepared ingredients', plant: 'Processed vegetables', animal: 'The mod\'s "animal" products' },
+      fam: { scan: 'Money from scanning', mine: 'Mining', move: 'Movement', surv: 'Survival' },
+    },
   };
-  const FAMILY = { scan: 'Dinero por escanear', mine: 'Minería', move: 'Movimiento', surv: 'Supervivencia' };
-  const bfChip = b => BUFF[b] ? `<span class="chip bf-${BUFF[b][0]}" title="${b}">${BUFF[b][1]}</span>` : '';
-  const CAT = { donut: 'Donas', cake: 'Pasteles', pie: 'Tartas', biscuit: 'Galletas y panes', ice: 'Helados', jam: 'Mermeladas',
-    drink: 'Bebidas', stew: 'Guisos', base: 'Ingredientes elaborados', plant: 'Vegetales procesados', animal: 'Productos «animales» del mod' };
+  // buff types, as stored in the game's FoodBonusStat
+  const BUFF = {
+    Weapon_Scan_Discovery_Creature: ['scan', 'Escanear fauna', 'Analizar animales con el Visor de análisis da más unidades mientras dura.', 'Fauna Analysis Rewards', 'Analysing animals with the Analysis Visor pays more units while it lasts.'],
+    Weapon_Scan_Discovery_Flora: ['scan', 'Escanear flora', 'Analizar plantas con el Visor de análisis da más unidades mientras dura.', 'Flora Analysis Rewards', 'Analysing plants with the Analysis Visor pays more units while it lasts.'],
+    Weapon_Scan_Discovery_Mineral: ['scan', 'Escanear minerales', 'Analizar minerales con el Visor de análisis da más unidades mientras dura.', 'Mineral Analysis Rewards', 'Analysing minerals with the Analysis Visor pays more units while it lasts.'],
+    Weapon_Scan_Recharge_Time: ['scan', 'Recarga del escáner', 'El escáner se recarga antes, así que puedes escanear más seguido.', 'Scanner Recharge', 'The scanner recharges faster, so you can scan more often.'],
+    Weapon_Laser_MiningBonus: ['mine', 'Más recursos al minar', 'El láser de minería saca más material de cada cosa que minas.', 'Mining Yield', 'The mining laser gets more material from everything you mine.'],
+    Weapon_Laser_Mining_Speed: ['mine', 'Minado más rápido', 'El láser de minería trabaja más rápido.', 'Mining Speed', 'The mining laser works faster.'],
+    Suit_Jetpack_Tank: ['move', 'Depósito del jetpack', 'El jetpack aguanta más tiempo antes de vaciarse.', 'Jetpack Tank', 'The jetpack lasts longer before it runs dry.'],
+    Suit_Stamina_Strength: ['move', 'Estamina', 'Puedes correr más tiempo sin cansarte.', 'Stamina', 'You can sprint for longer before getting tired.'],
+    Suit_Stamina_Recovery: ['move', 'Recuperación de estamina', 'La estamina se recupera antes después de correr.', 'Stamina Recovery', 'Stamina comes back faster after sprinting.'],
+    Suit_Armour_Shield_Strength: ['surv', 'Escudo', 'El escudo del exotraje aguanta más daño.', 'Shield Strength', 'Your exosuit shield absorbs more damage.'],
+    Suit_Energy: ['surv', 'Soporte vital', 'Más capacidad de soporte vital.', 'Life Support', 'More life support capacity.'],
+    Suit_Energy_Regen: ['surv', 'Recarga de soporte vital', 'El soporte vital se recupera mejor.', 'Life Support Recharge', 'Life support recovers better.'],
+    Suit_Protection: ['surv', 'Protección contra peligros', 'Aguantas más tiempo en entornos peligrosos.', 'Hazard Protection', 'You last longer in hazardous environments.'],
+    Suit_Protection_HeatDrain: ['surv', 'Resistencia al calor', 'Aguantas más en planetas calientes.', 'Heat Resistance', 'You last longer on hot planets.'],
+    Suit_Protection_ColdDrain: ['surv', 'Resistencia al frío', 'Aguantas más en planetas helados.', 'Cold Resistance', 'You last longer on frozen planets.'],
+    Suit_Protection_ToxDrain: ['surv', 'Resistencia tóxica', 'Aguantas más en planetas tóxicos.', 'Toxic Resistance', 'You last longer on toxic planets.'],
+    Suit_Protection_RadDrain: ['surv', 'Resistencia a la radiación', 'Aguantas más en planetas radiactivos.', 'Radiation Resistance', 'You last longer on radioactive planets.'],
+    Suit_Protection_WaterDrain: ['surv', 'Resistencia bajo el agua', 'Aguantas más tiempo buceando.', 'Underwater Protection', 'You last longer underwater.'],
+    Suit_AutoTranslator: ['surv', 'Traductor alienígena', 'Ayuda a entender los idiomas alienígenas.', 'Alien Translator', 'Helps you understand alien languages.'],
+  };
+  const FX_ORDER = ['life', 'hazard', 'health', 'sprint', 'jetpack'];
   const CAT_ORDER = ['donut', 'cake', 'pie', 'biscuit', 'ice', 'jam', 'drink', 'stew', 'base', 'plant', 'animal'];
   const FINAL = new Set(['donut', 'cake', 'pie', 'biscuit', 'ice', 'jam', 'drink', 'stew']);
-  const TABS = [
-    { id: 'buff', label: 'Buffs del Ingestor', hint: 'Lo que mejora cada comida si la comes con el Nutrient Ingestor (datos de tu juego). Dentro de cada buff, primero los platos de más calidad de cocina; el porcentaje exacto lo calcula el juego al comer.' },
-    { id: 'value', label: 'Más caras', hint: 'Ordenadas por precio de venta. Toca una comida para ver qué necesitas y los pasos.' },
-    { id: 'eff', label: 'Más rentables', hint: 'Mucho valor por cada paso en el procesador: menos trabajo para el mismo dinero.' },
-    { id: 'fx', label: 'Al comer', hint: 'Lo que hace cada comida si la comes directamente desde el inventario, sin el Ingestor.' },
-    { id: 'cat', label: 'Por tipo', hint: 'Donas, pasteles, tartas, helados… cada grupo ordenado por precio.' },
-    { id: 'mod', label: 'Recetas del mod', hint: 'Las 16 recetas que añade el mod y las plantas de cultivo de las que sale todo.' },
-  ];
+  const TAB_IDS = ['buff', 'value', 'eff', 'fx', 'cat', 'mod'];
+
+  let lang = store.get('rav-lang2', 'es') === 'en' ? 'en' : 'es';
+  let tab = store.get('rav-tab', 'buff');
+  if (!TAB_IDS.includes(tab)) tab = 'buff';
+  const t = () => T[lang];
+  const fmt = n => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, lang === 'es' ? '.' : ',');
+  const fmtQ = q => { const s = q.toFixed(2).replace(/0$/, ''); return lang === 'es' ? s.replace('.', ',') : s; };
+  const buffName = b => BUFF[b] ? BUFF[b][lang === 'es' ? 1 : 3] : b;
+  const buffDesc = b => BUFF[b] ? BUFF[b][lang === 'es' ? 2 : 4] : '';
 
   const foodsById = Object.fromEntries(D.foods.map(f => [f.id, f]));
   const nm = id => D.items[id] ? D.items[id][lang] : id;
@@ -286,111 +406,135 @@ footer p { margin: 0 0 6px; max-width: 80ch; }
     const it = D.items[id] || {}; const k = it.k === 'farm' ? ' farm' : it.k === 'wild' ? ' wild' : '';
     return `<span class="slot ${cls}${k}"><img src="${ICON[it.ic] || ''}" alt="" loading="lazy" decoding="async">${qty ? `<span class="qty">${esc(qty)}</span>` : ''}</span>`;
   };
-  const fxChip = e => e ? `<span class="chip fx-${e}">${FX[e]}</span>` : '';
+  const bfChip = b => BUFF[b] ? `<span class="chip bf-${BUFF[b][0]}">${esc(buffName(b))}</span>` : '';
   const badges = f => {
-    let h = `<span class="chip units">${fmt(f.v)} u</span><span class="chip steps">${f.steps.length} ${f.steps.length === 1 ? 'paso' : 'pasos'}</span>${bfChip(f.b)}`;
-    h += f.farm ? '<span class="chip farmchip">De tu huerto</span>' : `<span class="chip wildchip">+ ${f.wild.map(nm).map(esc).join(', ')}</span>`;
-    if (f.mod) h += '<span class="chip modchip">Usa el mod</span>';
+    let h = `<span class="chip units">${fmt(f.v)} u</span><span class="chip steps">${t().steps(f.steps.length)}</span>${bfChip(f.b)}`;
+    h += f.farm ? `<span class="chip farmchip">${t().fromFarm}</span>` : `<span class="chip wildchip">+ ${f.wild.map(nm).map(esc).join(', ')}</span>`;
+    if (f.mod) h += `<span class="chip modchip">${t().usesMod}</span>`;
     return h;
   };
-  const card = (f, rank) => `<button type="button" class="card" data-id="${f.id}">${slot(f.id)}<span><span class="name">${esc(nm(f.id))}</span><br><span class="alt">${esc(alt(f.id))}</span></span><span class="meta">${rank ? `<span class="rank">#${rank}</span>` : ''}${badges(f)}</span></button>`;
+  const buffBox = (f, withLink) => {
+    const b = BUFF[f.b];
+    return `<div class="buffbox"><div class="head">${bfChip(f.b)}${b ? `<span class="famlabel">${esc(t().fam[b[0]])}</span>` : ''}</div>
+      <p>${esc(buffDesc(f.b))}</p>
+      <dl><dt>${t().buffHow}</dt><dd>${esc(t().buffHowText)}</dd>
+      <dt>${t().eatDirect}</dt><dd>${f.e ? esc(t().fx[f.e]) : t().none}</dd>
+      <dt>${t().cookQual}</dt><dd>${fmtQ(f.q)}</dd></dl>
+      ${withLink ? `<button type="button" class="btn link" data-id="${f.id}">${t().openRecipe}</button>` : ''}</div>`;
+  };
+  const card = (f, rank) => `<article class="card">
+    <button type="button" class="card-main" data-id="${f.id}" aria-label="${esc(t().openAria(nm(f.id)))}">${slot(f.id)}<span><span class="name">${esc(nm(f.id))}</span><br><span class="alt">${esc(alt(f.id))}</span></span><span class="meta">${rank ? `<span class="rank">#${rank}</span>` : ''}${badges(f)}</span></button>
+    <button type="button" class="info-btn" data-info="${f.id}" aria-expanded="false" aria-controls="info-${f.id}" aria-label="${esc(t().infoAria(nm(f.id)))}">i</button>
+    <div class="info" id="info-${f.id}" hidden></div></article>`;
 
   function filtered() {
     const q = $('#q').value.trim().toLowerCase();
     const farm = $('#only-farm').checked, fin = $('#only-final').checked;
+    const hit = id => D.items[id].en.toLowerCase().includes(q) || D.items[id].es.toLowerCase().includes(q);
     return D.foods.filter(f => {
       if (farm && !f.farm) return false;
       if (fin && !FINAL.has(f.c)) return false;
       if (!q) return true;
-      if (D.items[f.id].en.toLowerCase().includes(q) || D.items[f.id].es.toLowerCase().includes(q)) return true;
-      return f.shop.some(([id]) => D.items[id].en.toLowerCase().includes(q) || D.items[id].es.toLowerCase().includes(q));
+      return hit(f.id) || f.shop.some(([id]) => hit(id)) || buffName(f.b).toLowerCase().includes(q);
     });
   }
-  const list = (arr, ranked) => arr.length ? `<div class="grid">${arr.map((f, i) => card(f, ranked ? i + 1 : 0)).join('')}</div>` : '<p class="empty">Nada coincide con la búsqueda o los filtros.</p>';
-  const group = (title, sub, arr) => arr.length ? `<section class="group"><h3>${esc(title)} <small>${esc(sub)}</small></h3>${list(arr)}</section>` : '';
+  const list = (arr, ranked) => arr.length ? `<div class="grid">${arr.map((f, i) => card(f, ranked ? i + 1 : 0)).join('')}</div>` : `<p class="empty">${t().empty}</p>`;
+  const group = (title, sub, arr, desc) => arr.length ? `<section class="group"><h3>${esc(title)} <small>${esc(sub)}</small></h3>${desc ? `<p>${esc(desc)}</p>` : ''}${list(arr)}</section>` : '';
 
   function render() {
     document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-    const t = TABS.find(x => x.id === tab) || TABS[0];
-    $('#hint').textContent = t.hint;
-    const filt = document.querySelector('.filters');
-    filt.hidden = tab === 'mod';
+    $('#hint').textContent = t().hints[tab];
+    $('#filters').hidden = tab === 'mod';
     const v = $('#view');
     if (tab === 'mod') { v.innerHTML = renderMod(); return; }
     const arr = filtered();
     const byValue = (a, b) => b.v - a.v;
-    if (tab === 'value') v.innerHTML = list(arr.slice().sort(byValue), true);
-    else if (tab === 'eff') v.innerHTML = list(arr.slice().sort((a, b) => b.v / b.steps.length - a.v / a.steps.length), true);
-    else if (tab === 'buff') {
+    if (tab === 'buff') {
       const byQual = (a, b) => (b.q - a.q) || (b.v - a.v);
-      v.innerHTML = Object.keys(FAMILY).map(fam => {
-        const parts = Object.keys(BUFF).filter(b => BUFF[b][0] === fam).map(b => {
-          const g = arr.filter(f => f.b === b).sort(byQual);
-          return g.length ? `<section class="group"><h3>${esc(BUFF[b][1])} <small>${g.length} comidas</small></h3><p>${esc(BUFF[b][2])}</p>${list(g)}</section>` : '';
-        }).join('');
-        return parts ? `<p class="fam">${esc(FAMILY[fam])}</p>${parts}` : '';
+      v.innerHTML = Object.keys(t().fam).map(fam => {
+        const parts = Object.keys(BUFF).filter(b => BUFF[b][0] === fam)
+          .map(b => group(buffName(b), t().foods(arr.filter(f => f.b === b).length), arr.filter(f => f.b === b).sort(byQual), buffDesc(b))).join('');
+        return parts ? `<p class="fam">${esc(t().fam[fam])}</p>${parts}` : '';
       }).join('') || list([]);
-    }
-    else if (tab === 'fx') v.innerHTML = FX_ORDER.map(e => { const g = arr.filter(f => f.e === e).sort(byValue); return group(FX[e], `${g.length} comidas`, g); }).join('') || list([]);
-    else if (tab === 'cat') v.innerHTML = CAT_ORDER.map(c => { const g = arr.filter(f => f.c === c).sort(byValue); return group(CAT[c], `${g.length}`, g); }).join('') || list([]);
+    } else if (tab === 'value') v.innerHTML = list(arr.slice().sort(byValue), true);
+    else if (tab === 'eff') v.innerHTML = list(arr.slice().sort((a, b) => b.v / b.steps.length - a.v / a.steps.length), true);
+    else if (tab === 'fx') v.innerHTML = FX_ORDER.map(e => { const g = arr.filter(f => f.e === e).sort(byValue); return group(t().fx[e], t().foods(g.length), g); }).join('') || list([]);
+    else if (tab === 'cat') v.innerHTML = CAT_ORDER.map(c => { const g = arr.filter(f => f.c === c).sort(byValue); return group(t().cat[c], t().foods(g.length), g); }).join('') || list([]);
   }
   function renderMod() {
-    const rows = D.mod.map(m => `<div class="modrow"><span class="label">${esc(lang === 'en' ? 'Processor Setting: ' + m.en : 'Configuración de procesador: ' + m.es.charAt(0).toLowerCase() + m.es.slice(1))}</span>
+    const rows = D.mod.map(m => `<div class="modrow"><span class="label">${esc(t().procLabel(lang === 'en' ? m.en : m.es))}</span>
       ${m.i.map(i => `<span class="cap">${slot(i, '', 'sm')}<b>${esc(nm(i))}</b></span>`).join('<span class="op">+</span>')}
-      <span class="arrow">→</span><button type="button" class="cap" data-id="${m.o}" style="border:0;background:none;cursor:${foodsById[m.o] ? 'pointer' : 'default'}">${slot(m.o, '', 'sm')}<b>${esc(nm(m.o))}</b></button></div>`).join('');
-    const basics = D.basics.map(([p, o]) => `<div class="modrow"><span class="cap">${slot(p, '', 'sm')}<b>${esc(nm(p))}</b></span><span class="arrow">→</span><span class="cap">${slot(o, '', 'sm')}<b>${esc(nm(o))}</b></span></div>`).join('');
-    return `<section class="group"><h3>Las 16 recetas del mod <small>todos los productos animales, desde plantas</small></h3><div class="modgrid">${rows}</div></section>
-      <section class="group"><h3>Tus 6 plantas de cultivo <small>sola en el procesador, cada una da un ingrediente básico</small></h3><div class="modgrid">${basics}</div></section>`;
+      <span class="arrow">→</span><button type="button" class="cap" data-id="${m.o}">${slot(m.o, '', 'sm')}<b>${esc(nm(m.o))}</b></button></div>`).join('');
+    const basics = D.basics.map(([p, o]) => `<div class="modrow"><span class="cap">${slot(p, '', 'sm')}<b>${esc(nm(p))}</b></span><span class="arrow">→</span><button type="button" class="cap" data-id="${o}">${slot(o, '', 'sm')}<b>${esc(nm(o))}</b></button></div>`).join('');
+    return `<section class="group"><h3>${esc(t().modTitle)} <small>${esc(t().modSub)}</small></h3><div class="modgrid">${rows}</div></section>
+      <section class="group"><h3>${esc(t().basicsTitle)} <small>${esc(t().basicsSub)}</small></h3><div class="modgrid">${basics}</div></section>`;
   }
   function openFood(id) {
     const f = foodsById[id]; if (!f) return;
-    const dlg = $('#dlg');
+    const dlg = $('#dlg'); dlg.dataset.food = id;
     const shop = f.shop.map(([i, q]) => `<span class="cap">${slot(i, q % 1 ? q.toFixed(1) : String(q))}<b>${esc(nm(i))}</b></span>`).join('');
     const steps = f.steps.map((s, k) => {
       const ins = s.i.map(([i, q]) => `<span class="cap">${slot(i, q > 1 ? String(q) : '', 'sm')}<b>${esc(nm(i))}</b></span>`).join('<span class="op">+</span>');
-      const tags = (s.n !== 1 ? `<span class="chip times">Haz ${s.n % 1 ? s.n.toFixed(1) : s.n}</span>` : '') + (s.m ? '<span class="chip modchip">Receta del mod</span>' : '');
+      const tags = (s.n !== 1 ? `<span class="chip times">${t().make(s.n % 1 ? s.n.toFixed(1) : s.n)}</span>` : '') + (s.m ? `<span class="chip modchip">${t().modRecipe}</span>` : '');
       return `<li class="${k === f.steps.length - 1 ? 'final' : ''}"><div class="flow"><span class="ins">${ins}</span><span class="arrow">→</span><span class="cap">${slot(s.o, '', 'sm')}<b>${esc(nm(s.o))}</b></span>${tags ? `<span class="tags">${tags}</span>` : ''}</div></li>`;
     }).join('');
-    dlg.innerHTML = `<div class="dlg-head">${slot(f.id)}<div><h2 id="dlg-title">${esc(nm(f.id))}</h2><div class="alt">${esc(alt(f.id))} · ${esc(CAT[f.c])}</div><div class="meta">${badges(f)}${f.e ? `<span class="chip fx-${f.e}">Al comer: ${FX[f.e]}</span>` : ''}<span class="chip qual">Calidad ${f.q.toFixed(2).replace(/0$/, '')}</span></div></div>
-      <form method="dialog"><button class="x" aria-label="Cerrar">✕</button></form></div>
-      <div class="dlg-body"><section><h4>Necesitas para 1 unidad</h4><div class="shop">${shop}</div>
-      <div class="legend"><span><i style="background:var(--leaf)"></i>planta de cultivo</span><span><i style="background:var(--wild)"></i>silvestre (no se cultiva)</span><span><i style="background:var(--slot-2)"></i>mineral o recurso básico</span></div></section>
-      <section><h4>Pasos en el Nutrient Processor</h4><ol class="proc">${steps}</ol>
-      <p class="note">Haz cada paso con pilas para fabricar varias unidades de una vez. "Haz 2" significa que ese paso se necesita dos veces para una unidad del plato final.</p></section></div>`;
+    dlg.innerHTML = `<div class="dlg-head">${slot(f.id)}<div><h2 id="dlg-title">${esc(nm(f.id))}</h2><div class="alt">${esc(alt(f.id))} · ${esc(t().cat[f.c])}</div><div class="meta">${badges(f)}</div></div>
+      <form method="dialog"><button class="x" aria-label="${t().close}">✕</button></form></div>
+      <div class="dlg-body"><section><h4>${t().buffTitle}</h4>${buffBox(f, false)}</section>
+      <section><h4>${t().need}</h4><div class="shop">${shop}</div>
+      <div class="legend"><span><i style="background:var(--leaf)"></i>${t().legFarm}</span><span><i style="background:var(--wild)"></i>${t().legWild}</span><span><i style="background:var(--slot-2)"></i>${t().legBasic}</span></div></section>
+      <section><h4>${t().procSteps}</h4><ol class="proc">${steps}</ol><p class="note">${esc(t().stepsNote)}</p></section></div>`;
     if (!dlg.open) dlg.showModal();
     dlg.scrollTop = 0;
   }
+  function toggleInfo(btn) {
+    const f = foodsById[btn.dataset.info]; const panel = document.getElementById('info-' + f.id);
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    if (open) panel.innerHTML = buffBox(f, true);
+    panel.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+  }
 
   function renderStatic() {
-    const s = D.stats;
-    $('#facts').innerHTML = `<p>Sin el mod, casi toda la cocina del juego pide productos de animales. Con las 16 recetas del mod, la mayoría de platos sale de plantas.</p>
-      <div class="fact hi"><b>${s.foods}</b><span>comidas solo con plantas</span></div>
-      <div class="fact"><b>${s.farm}</b><span>salen enteras de tu huerto</span></div>
-      <div class="fact"><b>${s.nomod}</b><span>se podían sin el mod</span></div>`;
-    const dn = foodsById['FOOD_DNUT_AJAM'];
-    const count = b => D.foods.filter(f => f.b === b).length;
-    $('#ingestor').innerHTML = `<span class="eyebrow">Buffs del Nutrient Ingestor</span>${dn ? slot(dn.id) : ''}
-      <div><h2>${esc(nm('FOOD_DNUT_AJAM'))}</h2>
-      <p>Si comes comida con la tecnología Nutrient Ingestor del exotraje, cada plato da un buff temporal. Este da <span class="buff">+6443 % de recompensa al escanear fauna durante 10 min</span>, según la wiki del juego.</p>
-      <p>Con plantas puedes hacer <span class="buff">${count('Weapon_Scan_Discovery_Creature')} comidas de fauna</span>, ${count('Weapon_Scan_Discovery_Flora')} de flora, ${count('Weapon_Scan_Discovery_Mineral')} de minerales y ${count('Weapon_Laser_MiningBonus') + count('Weapon_Laser_Mining_Speed')} de minería. El plano del Ingestor se compra al mercader de mejoras de exotraje en la Space Anomaly.</p></div>
-      <div class="row">${dn ? `<button type="button" class="btn primary" data-id="${dn.id}">Ver receta (${dn.steps.length} pasos)</button>` : ''}<button type="button" class="btn" data-tab="buff">Ver todos los buffs</button></div>`;
-    $('#foot-data').textContent = `Recetas calculadas sobre las ${fmt(s.vanilla)} recetas originales del Nutrient Processor (datos de 2025) más las del mod, eligiendo el camino con menos ingredientes y priorizando plantas de cultivo. Los tipos de buff y la calidad de cocina salen de la tabla de productos de tu juego (versión 180836).`;
-    $('#tabs').innerHTML = TABS.map(t => `<button type="button" role="tab" class="tab" data-tab="${t.id}">${t.label}</button>`).join('');
+    const L = t(), s = D.stats;
+    document.documentElement.lang = lang;
+    $('#t-title').textContent = L.title; $('#t-sub').textContent = L.sub;
+    $('#lang-group').setAttribute('aria-label', L.langGroup);
     $('#lang-en').setAttribute('aria-pressed', String(lang === 'en'));
     $('#lang-es').setAttribute('aria-pressed', String(lang === 'es'));
+    $('#q').placeholder = L.search; $('#q').setAttribute('aria-label', L.search);
+    $('#t-farm').textContent = L.onlyFarm; $('#t-final').textContent = L.onlyFinal;
+    $('#facts').innerHTML = `<p>${esc(L.factsLead)}</p>
+      <div class="fact hi"><b>${s.foods}</b><span>${L.factFoods}</span></div>
+      <div class="fact"><b>${s.farm}</b><span>${L.factFarm}</span></div>
+      <div class="fact"><b>${s.nomod}</b><span>${L.factNoMod}</span></div>`;
+    const dn = foodsById['FOOD_DNUT_AJAM'];
+    const count = b => D.foods.filter(f => f.b === b).length;
+    $('#ingestor').innerHTML = `<span class="eyebrow">${L.ingEyebrow}</span>${dn ? slot(dn.id) : ''}
+      <div><h2>${esc(nm('FOOD_DNUT_AJAM'))}</h2><p>${L.ingLead}</p>
+      <p>${L.ingCounts(count('Weapon_Scan_Discovery_Creature'), count('Weapon_Scan_Discovery_Flora'), count('Weapon_Scan_Discovery_Mineral'), count('Weapon_Laser_MiningBonus') + count('Weapon_Laser_Mining_Speed'))}</p></div>
+      <details><summary>${esc(L.ingHowTitle)}</summary><ul>${L.ingHow.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>
+      <div class="row">${dn ? `<button type="button" class="btn primary" data-id="${dn.id}">${L.seeRecipe(dn.steps.length)}</button>` : ''}<button type="button" class="btn" data-tab="buff">${L.seeBuffs}</button></div>`;
+    $('#tabs').innerHTML = TAB_IDS.map(id => `<button type="button" role="tab" class="tab" data-tab="${id}">${L.tabs[id]}</button>`).join('');
+    $('#foot').innerHTML = L.foot.map(p => `<p>${esc(typeof p === 'function' ? p(fmt(s.vanilla)) : p)}</p>`).join('');
   }
 
   document.addEventListener('click', e => {
-    const t = e.target.closest('[data-tab]');
-    if (t) { tab = t.dataset.tab; store.set('rav-tab', tab); render(); return; }
+    const tb = e.target.closest('[data-tab]');
+    if (tb) { tab = tb.dataset.tab; store.set('rav-tab', tab); render(); if (!tb.classList.contains('tab')) $('#controls').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    const ib = e.target.closest('[data-info]');
+    if (ib) { toggleInfo(ib); return; }
     const c = e.target.closest('[data-id]');
     if (c && foodsById[c.dataset.id]) { openFood(c.dataset.id); return; }
     const l = e.target.closest('#lang-en, #lang-es');
-    if (l) { lang = l.id === 'lang-es' ? 'es' : 'en'; store.set('rav-lang', lang); renderStatic(); render(); }
+    if (l) {
+      lang = l.id === 'lang-en' ? 'en' : 'es'; store.set('rav-lang2', lang);
+      const dlg = $('#dlg'); const openId = dlg.open ? dlg.dataset.food : null;
+      renderStatic(); render(); if (openId) openFood(openId);
+    }
   });
   $('#dlg').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+  $('#dlg').addEventListener('close', e => { e.currentTarget.innerHTML = ''; delete e.currentTarget.dataset.food; });
   ['#q', '#only-farm', '#only-final'].forEach(s => $(s).addEventListener('input', render));
-  if (!TABS.some(t => t.id === tab)) tab = 'buff';
   renderStatic(); render();
 })();
 </script>
