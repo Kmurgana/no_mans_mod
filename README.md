@@ -64,7 +64,7 @@ Este mod tiene solo dos archivos:
 ```
 AlternativasVegetales\
 ├── AlternativasVegetales.lua   ← el script: la lista de recetas y cómo añadirlas
-└── LocTable.MXML               ← los nombres de las recetas en cada idioma
+└── LocTable.txt                ← los nombres de las recetas en cada idioma
 ```
 
 ---
@@ -97,7 +97,7 @@ AlternativasVegetales\
 
    ```
    C:\AMUMSS\ModScript\AlternativasVegetales\AlternativasVegetales.lua
-   C:\AMUMSS\ModScript\AlternativasVegetales\LocTable.MXML
+   C:\AMUMSS\ModScript\AlternativasVegetales\LocTable.txt
    ```
 
 ### 3. Crea el mod
@@ -114,7 +114,7 @@ AlternativasVegetales\
    ...\No Man's Sky\GAMEDATA\MODS\AlternativasVegetales\
    ```
 
-   Dentro debe haber una carpeta `METADATA` y el archivo `LocTable.MXML`.
+   Dentro debe haber una carpeta `METADATA` y el archivo `LocTable.MXML`, que AMUMSS genera a partir de `LocTable.txt`.
 
 ### 4. Juega
 
@@ -128,7 +128,7 @@ Arranca el juego. Al detectar mods, el juego muestra un aviso al inicio: acépta
 2. Pon **1 Granos de vidrio** y **1 Cristal de escarcha**.
 3. Debe salir **Leche fresca**, y el procesador debe mostrar *«Configuración de procesador: leche de avena»*.
 
-Si sale la Leche fresca pero ves un código como `ALTVEG_LECHE_AVENA_R` en vez del nombre, el mod funciona pero los textos no se han cargado. Copia `LocTable.MXML` a mano dentro de `GAMEDATA\MODS\AlternativasVegetales\`.
+Si sale la Leche fresca pero ves un código como `ALTVEG_LECHE_AVENA_R` en vez del nombre, el mod funciona pero los textos no se han cargado. Revisa que en la carpeta del script esté `LocTable.txt` (y **no** un `LocTable.MXML`: ver [Si algo falla](#si-algo-falla)) y vuelve a ejecutar `BUILDMOD.bat`.
 
 ---
 
@@ -139,7 +139,7 @@ Todo se hace en `AlternativasVegetales.lua`, en la tabla **`RECETAS`** del princ
 ```lua
 {
   id = "RECIPE_ALTVEG_LECHE_AVENA",          -- nombre interno único (máx. 31 letras)
-  texto = "ALTVEG_LECHE_AVENA",              -- clave del nombre (ver LocTable.MXML)
+  texto = "ALTVEG_LECHE_AVENA",              -- clave del nombre (ver LocTable.txt)
   resultado = { id = "FOOD_V_COW", tipo = P, cantidad = 1 },        -- Leche fresca
   ingredientes = {
     { id = "FOOD_P_COLDFARM", tipo = P, cantidad = 1 },             -- Granos de vidrio
@@ -152,7 +152,7 @@ Todo se hace en `AlternativasVegetales.lua`, en la tabla **`RECETAS`** del princ
 - Puedes poner de **1 a 3 ingredientes**, porque el procesador tiene 3 ranuras.
 - Puedes subir las `cantidad` si quieres que las recetas sean más caras (por ejemplo, 2 + 1 → 1).
 - **Cada receta necesita una combinación de ingredientes única.** Si coincide con otra del mod, el script te avisa. Si coincide con una receta del juego, una de las dos no funcionará: pruébala en el juego.
-- Si añades una receta nueva, añade también sus dos textos en `LocTable.MXML`: copia un bloque `<Property name="Table" value="TkLocalisationEntry">` completo, una vez para `TU_CLAVE` y otra para `TU_CLAVE_R`, y cambia el `Id` y los textos. `Spanish` es el español de España y `LatinAmericanSpanish` el de Latinoamérica.
+- Si añades una receta nueva, añade también sus dos textos en `LocTable.txt`: una línea `=TU_CLAVE` seguida de una línea por idioma (`EN=texto`, `ES=texto`…), y lo mismo para `=TU_CLAVE_R`. Copia un bloque existente y cambia la clave y los textos. `ES` es el español de España, `LA` el de Latinoamérica, `EN`/`US` el inglés, y el resto de códigos (`FR`, `DE`, `IT`, `PT`, `BR`, `RU`, `PL`, `NL`, `Z1`, `ZH`, `Z2`, `KO`, `JA`) los demás idiomas del juego.
 
 Después vuelve a ejecutar `BUILDMOD.bat`. Si te equivocas al editar (un tipo que no es `P`/`S`, una cantidad con decimales, un `id` repetido…), el script se detiene y explica el error en español.
 
@@ -211,6 +211,7 @@ Borra la carpeta `No Man's Sky\GAMEDATA\MODS\AlternativasVegetales`. La comida q
 - **AMUMSS muestra errores**: revisa el archivo `REPORT.lua` que deja en su carpeta principal. Ahí explica qué falló.
 - **El mod no se carga**: comprueba que está en `GAMEDATA\MODS` (no en `PCBANKS\MODS`, que era el sistema antiguo). Si sigue sin cargar, cierra el juego y borra `No Man's Sky\Binaries\SETTINGS\GCMODSETTINGS.MXML`: el juego lo vuelve a crear al arrancar. En ese archivo también puedes desactivar un mod poniendo `Enabled` en `false`.
 - **Una receta concreta no funciona**: puede que una actualización del juego haya añadido una receta con los mismos ingredientes. Cámbiale un ingrediente en la tabla `RECETAS` y reconstruye.
+- **Las recetas funcionan pero se ven códigos como `ALTVEG_..._R`**: en la carpeta del script tiene que estar `LocTable.txt`. No pongas ahí un `LocTable.MXML`: AMUMSS 5.6.2.0w busca ese archivo en otra carpeta y acaba generando un archivo de textos vacío. Borra la carpeta `ModScript\AlternativasVegetales`, vuelve a copiar la del mod y ejecuta `BUILDMOD.bat`.
 - **Ayuda de la comunidad**: el Discord *No Man's Sky Modding* tiene un canal `#amumss-lua` dedicado a AMUMSS.
 
 ---
@@ -224,5 +225,6 @@ No pude ejecutar el juego ni AMUMSS al preparar el mod, porque ambos son program
 - Los IDs de los objetos existen en el juego y tienen el tipo correcto (producto o sustancia).
 - Ninguna de las 16 combinaciones de ingredientes coincide con las 1.323 recetas originales del Procesador de Nutrientes (datos de 2025). Si una actualización posterior añadió una receta igual, cambia esa combinación.
 - Los controles de errores del script detectan ids repetidos, combinaciones repetidas, tipos incorrectos y cantidades no enteras.
+- `LocTable.txt` se convirtió con el código de AMUMSS (las funciones de `LoadHelpers.lua`) y da un `LocTable.MXML` con las 32 claves en los 17 idiomas. El script pasa el analizador selene con la configuración de AMUMSS sin errores ni avisos.
 
 La prueba definitiva es la del apartado [Cómo probar que funciona](#cómo-probar-que-funciona).

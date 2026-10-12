@@ -11,14 +11,14 @@
     la tabla de recetas (METADATA/REALITY/TABLES/NMS_REALITY_GCRECIPETABLE).
 
   Como se usa:
-    Copia esta carpeta completa (con LocTable.MXML) dentro de AMUMSS\ModScript\
+    Copia esta carpeta completa (con LocTable.txt) dentro de AMUMSS\ModScript\
     y ejecuta BUILDMOD.bat. Los pasos detallados estan en el README.md.
 
   Para cambiar o anadir recetas edita SOLO la tabla RECETAS de abajo.
   Cada receta tiene:
     id           -> identificador unico de la receta (inventado, max. 31 letras)
     texto        -> clave del nombre que se ve en el juego. Sus traducciones
-                    estan en LocTable.MXML (clave "texto" y clave "texto_R")
+                    estan en LocTable.txt (clave "texto" y clave "texto_R")
     resultado    -> lo que sale del procesador
     ingredientes -> de 1 a 3 ingredientes (el procesador tiene 3 ranuras)
 
